@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skill Swap · Modern Chat</title>
+  <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Modern UI Reset & Variables */
+    :root {
+      --primary: #8b5cf6;
+      --primary-hover: #7c3aed;
+      --bg-dark: #0f172a;
+      --bg-panel: #1e293b;
+      --border-color: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --glass-bg: rgba(30, 41, 59, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.05);
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    
+    body {
+      background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    button { cursor: pointer; border: none; outline: none; transition: 0.2s all; }
+    input { outline: none; border: none; font-family: inherit; }
+
+    /* Login Overlay */
+    #loginOverlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(12px);
+      display: flex; justify-content: center; alignItems: center; z-index: 1000;
+    }
+    .login-box {
+      background: var(--bg-panel); border: 1px solid var(--border-color);
+      padding: 40px; border-radius: 20px; text-align: center; width: 400px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+    .login-box h2 { margin-bottom: 20px; color: #a78bfa; font-size: 28px; }
+    .login-box label { display: block; text-align: left; margin-bottom: 8px; color: var(--text-muted); font-size: 14px; }
+    .login-box input {
+      width: 100%; padding: 12px 16px; border-radius: 12px; background: rgba(0,0,0,0.2);
+      border: 1px solid var(--border-color); color: white; margin-bottom: 24px; font-size: 15px;
+    }
+    .login-box button {
+      width: 100%; padding: 14px; background: linear-gradient(to right, #8b5cf6, #d946ef);
+      color: white; border-radius: 12px; font-weight: 600; font-size: 16px;
+    }
+    .login-box button:hover { opacity: 0.9; transform: translateY(-2px); }
+
+    /* Layout */
+    #sidebar {
+      width: 320px; background: var(--bg-panel); border-right: 1px solid var(--border-color);
+      display: flex; flex-direction: column; z-index: 10;
+    }
+    #chatArea { flex: 1; display: flex; flex-direction: column; position: relative; }
+
+    /* Sidebar Headings */
+    .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border-color); }
+    .sidebar-header h3 { font-size: 22px; font-weight: 600; background: -webkit-linear-gradient(#a78bfa, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    
+    .chat-list { flex: 1; overflow-y: auto; padding: 12px; }
+    .chat-item {
+      padding: 16px; margin-bottom: 8px; border-radius: 12px;
+      cursor: pointer; display: flex; align-items: center; gap: 14px;
+      background: rgba(255,255,255,0.02); border: 1px solid transparent; transition: 0.3s;
+    }
+    .chat-item:hover { background: rgba(255,255,255,0.05); }
+    .chat-item.active { background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.3); }
+    .chat-icon { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #a855f7); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 18px; color: white;}
+    .chat-info h4 { font-size: 15px; color: var(--text-main); font-weight: 500;}
+    .chat-info p { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .badge-join { background: #10b981; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-left: auto; }
+
+    /* Chat Header */
+    #activeChatHeader {
+      padding: 20px 24px; background: var(--glass-bg); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 16px;
+    }
+    #activeChatHeader .chat-icon { width: 40px; height: 40px; }
+
+    /* Middle Area (Messages / Join State) */
+    #messagesContainer {
+      flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px;
+    }
+    
+    /* Messages */
+    .msg-bubble { max-width: 65%; padding: 14px 18px; border-radius: 20px; font-size: 15px; line-height: 1.4; animation: slideIn 0.3s ease-out; position: relative;}
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .msg-mine { align-self: flex-end; background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); }
+    .msg-other { align-self: flex-start; background: var(--bg-panel); border: 1px solid var(--border-color); color: var(--text-main); border-bottom-left-radius: 4px; }
+    .msg-sender { font-size: 11px; opacity: 0.7; margin-bottom: 4px; font-weight: 500; }
+    .msg-time { font-size: 10px; opacity: 0.5; margin-top: 6px; text-align: right; }
+
+    /* Join Overlay */
+    #joinOverlay {
+      position: absolute; inset: 0; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(5px);
+      display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 5; text-align: center; display: none;
+    }
+    #joinOverlay h2 { font-size: 24px; margin-bottom: 10px; }
+    #joinOverlay p { color: var(--text-muted); margin-bottom: 24px; max-width: 400px; }
+    #btnJoin {
+      padding: 14px 32px; background: linear-gradient(to right, #10b981, #059669); color: white;
+      border-radius: 30px; font-size: 16px; font-weight: 600; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+    }
+    #btnJoin:hover { transform: scale(1.05); }
+
+    /* Input Area */
+    #inputBox {
+      padding: 20px 24px; background: var(--bg-panel); border-top: 1px solid var(--border-color);
+      display: flex; gap: 16px; align-items: center;
+    }
+    #msgInput {
+      flex: 1; padding: 16px 20px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border);
+      border-radius: 30px; color: white; font-size: 15px; transition: 0.3s;
+    }
+    #msgInput:focus { border-color: var(--primary); background: rgba(0,0,0,0.4); }
+    #msgInput:disabled { opacity: 0.5; cursor: not-allowed; }
+    #sendBtn {
+      width: 50px; height: 50px; border-radius: 50%; background: var(--primary);
+      color: white; display: flex; justify-content: center; align-items: center;
+      box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+    }
+    #sendBtn:hover:not(:disabled) { background: var(--primary-hover); transform: scale(1.05); }
+    #sendBtn:disabled { background: #334155; box-shadow: none; cursor: not-allowed; }
+
+  </style>
+</head>
+<body>
+
+  <!-- Login Overlay -->
+  <div id="loginOverlay">
+    <div class="login-box">
+      <h2>Welcome Back</h2>
+      <label>Your JWT Token</label>
+      <input type="text" id="tokenInput" placeholder="Skill-swap eyJ..." />
+      <button id="startBtn">Enter Workspace</button>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <h3>SkillSwap Chats</h3>
+    </div>
+    <div class="chat-list" id="chatList">
+      <!-- Chats will render here -->
+    </div>
+  </div>
+
+  <!-- Chat Area -->
+  <div id="chatArea">
+    
+    <!-- Active Header -->
+    <div id="activeChatHeader" style="visibility: hidden;">
+      <div class="chat-icon" id="headerIcon">#</div>
+      <div>
+        <h4 id="headerName" style="font-size: 18px;">Select a chat</h4>
+        <p id="headerType" style="font-size: 13px; color: var(--text-muted);">...</p>
+      </div>
+    </div>
+
+    <!-- Join Overlay (Shown if unjoined track) -->
+    <div id="joinOverlay">
+      <h2 id="joinTitle">Track Name</h2>
+      <p>You need to join this track to view messages and participate in the discussion.</p>
+      <button id="btnJoin">Join Track Now</button>
+    </div>
+
+    <!-- Messages -->
+    <div id="messagesContainer">
+      <!-- Messages load here -->
+    </div>
+
+    <!-- Input -->
+    <div id="inputBox">
+      <input type="text" id="msgInput" placeholder="Type your message..." disabled autocomplete="off" />
+      <button id="sendBtn" disabled>
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+      </button>
+    </div>
+  </div>
+
+<script>
+  const PUSHER_KEY = "e3ac92c762aaed1a23ae";
+  const PUSHER_CLUSTER = "mt1";
+  const SERVER_URL = window.location.origin;
+
+  let myToken = "";
+  let myUserId = "";
+  let chatsData = [];
+  let currentChat = null;
+  let pusher = null;
+  let currentChannel = null;
+
+  // Login
+  document.getElementById('startBtn').addEventListener('click', async () => {
+    myToken = document.getElementById('tokenInput').value.trim();
+    if (!myToken) return alert("Please enter token");
+    
+    pusher = new Pusher(PUSHER_KEY, { cluster: PUSHER_CLUSTER, forceTLS: true });
+    
+    try {
+      const payload = JSON.parse(atob(myToken.split('.')[1]));
+      myUserId = payload.id;
+      
+      const chatListChannel = pusher.subscribe(`user_chats_${myUserId}`);
+      chatListChannel.bind('chat_list_update', async (data) => {
+        console.log("Chat list update received", data);
+        await fetchChats();
+      });
+      
+      const globalChannel = pusher.subscribe('global_chats');
+      globalChannel.bind('chat_list_update', async () => {
+        await fetchChats();
+      });
+    } catch(e) { console.error("Pusher setup error", e); }
+
+    document.getElementById('loginOverlay').style.display = 'none';
+    await fetchChats();
+  });
+
+  async function fetchChats() {
+    try {
+      const res = await fetch(`${SERVER_URL}/chat/my-chats`, {
+        headers: { 'Authorization': myToken }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        try {
+          const payload = JSON.parse(atob(myToken.split('.')[1]));
+          myUserId = payload.id;
+        } catch(e) { console.error("Could not parse JWT", e); }
+        
+        chatsData = data.chats;
+        renderChatList();
+      }
+    } catch(e) { console.error(e); }
+  }
+
+  function renderChatList() {
+    const list = document.getElementById('chatList');
+    list.innerHTML = '';
+    
+    chatsData.forEach(chat => {
+      const isParticipant = chat.participants.some(p => p._id === myUserId || p === myUserId);
+      const isGlobal = chat.type === 'global';
+      const needsJoin = !isGlobal && !isParticipant && chat.type === 'track';
+
+      let chatName = chat.name || "Unknown";
+      let iconText = chatName.substring(0,2).toUpperCase();
+      if(chat.type === 'private') {
+        const otherUser = chat.participants.find(p => p._id !== myUserId);
+        chatName = otherUser ? otherUser.userName : "Chat";
+        iconText = chatName.substring(0,2).toUpperCase();
+      }
+
+      const div = document.createElement('div');
+      div.className = `chat-item ${currentChat && currentChat._id === chat._id ? 'active' : ''}`;
+      div.innerHTML = `
+        <div class="chat-icon">${iconText}</div>
+        <div class="chat-info" style="flex:1;">
+          <h4>${chatName}</h4>
+          <p>${chat.type.charAt(0).toUpperCase() + chat.type.slice(1)}</p>
+        </div>
+        ${needsJoin ? '<span class="badge-join">JOIN</span>' : ''}
+      `;
+      div.onclick = () => selectChat(chat, isParticipant, needsJoin, chatName, iconText);
+      list.appendChild(div);
+    });
+  }
+
+  async function selectChat(chat, isParticipant, needsJoin, chatName, iconText) {
+    currentChat = chat;
+    renderChatList();
+    
+    document.getElementById('activeChatHeader').style.visibility = 'visible';
+    document.getElementById('headerIcon').textContent = iconText;
+    document.getElementById('headerName').textContent = chatName;
+    document.getElementById('headerType').textContent = chat.type.toUpperCase();
+
+    const joinOverlay = document.getElementById('joinOverlay');
+    const msgContainer = document.getElementById('messagesContainer');
+    const msgInput = document.getElementById('msgInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    msgContainer.innerHTML = '';
+
+    if (needsJoin) {
+      joinOverlay.style.display = 'flex';
+      document.getElementById('joinTitle').textContent = chatName;
+      msgInput.disabled = true;
+      sendBtn.disabled = true;
+      
+      document.getElementById('btnJoin').onclick = () => doJoin(chat);
+    } else {
+      joinOverlay.style.display = 'none';
+      msgInput.disabled = false;
+      sendBtn.disabled = false;
+      
+      await loadMessages(chat._id);
+      
+      if (currentChannel) pusher.unsubscribe(currentChannel.name);
+      currentChannel = pusher.subscribe(chat._id.toString());
+      currentChannel.bind('receive_message', (data) => {
+        if (data.senderId === myUserId) return;
+        appendMessage(data.senderData?.userName || "User", data.message, false, data.timestamp);
+      });
+    }
+  }
+
+  async function doJoin(chat) {
+    if (!chat.trackId) return;
+    const res = await fetch(`${SERVER_URL}/chat/track/${chat.trackId._id || chat.trackId}/join`, {
+      method: 'POST',
+      headers: { 'Authorization': myToken }
+    });
+    if (res.ok) {
+      await fetchChats();
+      const updatedChat = chatsData.find(c => c._id === chat._id);
+      if(updatedChat) {
+        selectChat(updatedChat, true, false, document.getElementById('headerName').textContent, document.getElementById('headerIcon').textContent);
+      }
+    } else {
+      alert("Failed to join track");
+    }
+  }
+
+  async function loadMessages(chatId) {
+    const res = await fetch(`${SERVER_URL}/chat/${chatId}/messages`, {
+      headers: { 'Authorization': myToken }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      data.messages.forEach(m => {
+        const isMine = m.senderId?._id === myUserId || m.senderId === myUserId;
+        appendMessage(m.senderId?.userName || "User", m.content, isMine, m.createdAt);
+      });
+    }
+  }
+
+  document.getElementById('sendBtn').addEventListener('click', sendMessage);
+  document.getElementById('msgInput').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') sendMessage();
+  });
+
+  async function sendMessage() {
+    const el = document.getElementById('msgInput');
+    const content = el.value.trim();
+    if(!content || !currentChat) return;
+
+    el.disabled = true;
+    try {
+      const res = await fetch(`${SERVER_URL}/chat/${currentChat._id}/message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': myToken },
+        body: JSON.stringify({ content, type: 'text' })
+      });
+      if(res.ok) {
+        appendMessage("Me", content, true, new Date());
+        el.value = '';
+      }
+    } catch(e) { alert("Error sending"); }
+    el.disabled = false;
+    el.focus();
+  }
+
+  function appendMessage(sender, content, isMine, timestamp) {
+    const container = document.getElementById('messagesContainer');
+    const div = document.createElement('div');
+    div.className = `msg-bubble ${isMine ? 'msg-mine' : 'msg-other'}`;
+    const time = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    div.innerHTML = `
+      ${!isMine ? `<div class="msg-sender">${escapeHtml(sender)}</div>` : ''}
+      <div>${escapeHtml(content)}</div>
+      <div class="msg-time">${time}</div>
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function escapeHtml(str = '') { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>

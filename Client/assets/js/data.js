@@ -1,0 +1,203 @@
+const mockData = {
+  users: [
+    {
+      id: 1,
+      name: "Ahmed Ali",
+      email: "ahmed@example.com",
+      role: "Student",
+      hours: 12,
+      status: "Active",
+      joinDate: "2023-10-15",
+    },
+    {
+      id: 2,
+      name: "Sara Mohamed",
+      email: "sara@example.com",
+      role: "Mentor",
+      hours: 45,
+      status: "Active",
+      joinDate: "2023-09-01",
+    },
+    {
+      id: 3,
+      name: "John Doe",
+      email: "john@example.com",
+      role: "Both",
+      hours: 5,
+      status: "Blocked",
+      joinDate: "2024-01-05",
+    },
+    {
+      id: 4,
+      name: "Layla Hassan",
+      email: "layla@example.com",
+      role: "Student",
+      hours: 20,
+      status: "Active",
+      joinDate: "2023-11-20",
+    },
+    {
+      id: 5,
+      name: "Karim Omar",
+      email: "karim@example.com",
+      role: "Mentor",
+      hours: 100,
+      status: "Active",
+      joinDate: "2023-05-10",
+    },
+  ],
+  stats: {
+    totalUsers: 1250,
+    totalStudents: 800,
+    totalMentors: 350,
+    exchangedHours: 5400,
+    totalRevenue: 12500, // In USD or local currency
+  },
+  sessions: [
+    {
+      id: 101,
+      student: "Ahmed Ali",
+      mentor: "Sara Mohamed",
+      type: "Free",
+      duration: 2,
+      status: "Completed",
+      date: "2024-01-15",
+    },
+    {
+      id: 102,
+      student: "Layla Hassan",
+      mentor: "Karim Omar",
+      type: "Paid",
+      duration: 1,
+      price: 50,
+      status: "Pending",
+      date: "2024-01-18",
+    },
+    {
+      id: 103,
+      student: "John Doe",
+      mentor: "Sara Mohamed",
+      type: "Free",
+      duration: 1,
+      status: "Cancelled",
+      date: "2024-01-10",
+    },
+  ],
+  mentors: [
+    {
+      id: 1,
+      name: "Sara Mohamed",
+      skill: "Web Development",
+      sessions: 15,
+      rating: 4.8,
+      status: "Active",
+    },
+    {
+      id: 2,
+      name: "Karim Omar",
+      skill: "Data Science",
+      sessions: 8,
+      rating: 4.9,
+      status: "Active",
+    },
+    {
+      id: 3,
+      name: "Mona Ezzat",
+      skill: "Graphic Design",
+      sessions: 20,
+      rating: 4.5,
+      status: "Pending",
+    },
+  ],
+  hoursLogs: [
+    {
+      id: 1,
+      user: "Ahmed Ali",
+      change: -2,
+      reason: "Learning Session",
+      date: "2024-01-15",
+    },
+    {
+      id: 2,
+      user: "Sara Mohamed",
+      change: +2,
+      reason: "Teaching Session",
+      date: "2024-01-15",
+    },
+    {
+      id: 3,
+      user: "Layla Hassan",
+      change: +10,
+      reason: "Package Purchase",
+      date: "2024-01-10",
+    },
+  ],
+  payments: [
+    {
+      id: 1,
+      student: "Layla Hassan",
+      mentor: "Karim Omar",
+      amount: 50,
+      method: "Credit Card",
+      date: "2024-01-18",
+    },
+    {
+      id: 2,
+      student: "Ahmed Ali",
+      mentor: "N/A",
+      amount: 100,
+      method: "PayPal",
+      date: "2024-01-12",
+    }, // Buying hours
+  ],
+
+  reports: [
+    {
+      id: 1,
+      reporter: "Ahmed Ali",
+      reportedUser: "John Doe",
+      issue:
+        "User was very rude during our session and used inappropriate language. Made me feel uncomfortable.",
+      date: "2024-01-20",
+      status: "Pending",
+    },
+    {
+      id: 2,
+      reporter: "Sara Mohamed",
+      reportedUser: "Layla Hassan",
+      issue:
+        "Student did not show up for scheduled session and did not respond to messages.",
+      date: "2024-01-18",
+      status: "Resolved",
+    },
+    {
+      id: 3,
+      reporter: "Karim Omar",
+      reportedUser: "Ahmed Ali",
+      issue:
+        "Payment was delayed by 3 days without any communication or explanation.",
+      date: "2024-01-22",
+      status: "Pending",
+    },
+  ],
+  charts: {
+    dailySessions: {
+      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      data: [12, 19, 3, 5, 2, 3, 10],
+    },
+    revenue: {
+      labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+      data: [1200, 1900, 3000, 2500],
+    },
+    topSkills: {
+      labels: [
+        "Web Dev",
+        "Data Science",
+        "Graphic Design",
+        "Marketing",
+        "Languages",
+      ],
+      data: [35, 25, 20, 15, 5],
+    },
+  },
+};

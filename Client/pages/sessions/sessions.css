@@ -1,0 +1,99 @@
+/* Sessions Page Specific Styles */
+
+/* Date column often wraps, make it whitespace: nowrap if preferred */
+.table-container td:nth-child(6) {
+    white-space: nowrap;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Filter button area */
+.section-header div {
+    display: flex;
+    align-items: center;
+}
+
+/* Search Input */
+.search-container {
+    position: relative;
+    width: 300px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.search-input:focus {
+    border-color: var(--primary-color);
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+/* Avatar Styles */
+.session-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 2px solid var(--border-soft);
+}
+
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-header);
+}
+
+.user-role {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+}
+
+.badge-student { color: var(--primary-color); }
+.badge-mentor { color: var(--secondary-color); }
+
+/* Status Badges */
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.status-completed { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+.status-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+.status-rejected, .status-cancelled { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+.status-expired { background: rgba(100, 116, 139, 0.1); color: var(--text-muted); }
+.status-accepted { background: rgba(14, 165, 233, 0.1); color: var(--info); }

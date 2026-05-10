@@ -1,0 +1,19 @@
+/* Payments Page Specific Styles */
+
+/* Amount column */
+.table-container td:nth-child(3) {
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+/* Stat card in header - unique to payments page currently */
+.section-header .stat-card {
+    background: var(--bg-card);
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    display: inline-flex;
+    flex-direction: column;
+    margin-bottom: 0;
+    /* Override default margin */
+}
